@@ -1,8 +1,16 @@
 var openpgp = require('openpgp');
-// var fs = require('fs');
+var readline = require('readline');
+var prompt = require('prompt');
 
 
-function generate_key() {
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+
+
+function generate_key(ksize, id, pass) {
 
 	var options = {
 		numBits: 2048,
@@ -21,6 +29,11 @@ function generate_key() {
 		console.log("Error ocurred.");
 	});
 }
+
+
+
+
+/*
 
 // Encryption
 
@@ -53,3 +66,4 @@ function decrypt() {
 		// failure
 	});
 }
+*/
