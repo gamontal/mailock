@@ -1,0 +1,18 @@
+{
+  "name": "maillock",
+  "version": "0.0.1",
+  "description": "Send encrypted emails with OpenPGP.js.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/gmontalvo5416/maillock.js"
+  },
+  "author": "Gabriel Montalvo",
+  "license": "ISC",
+  "dependencies": {
+    "openpgp": "^1.2.0"
+  }
+}
