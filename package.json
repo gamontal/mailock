@@ -13,6 +13,7 @@
   "author": "Gabriel Montalvo",
   "license": "ISC",
   "dependencies": {
+    "commander": "^2.8.1",
     "openpgp": "^1.2.0",
     "prompt": "^0.2.14"
   }
