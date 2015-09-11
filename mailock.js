@@ -114,7 +114,7 @@ function main() {
   .version('0.0.1')
   .usage('[options] <file ...>')
   .option('-g, --keygen', 'Generate a key pair (They will be saved in your current directory).')
-  //.option('-e, --encrypt <f>', 'Encrypt a file.', encrypt)
+  // .option('-e, --encrypt <f>', 'Encrypt a file.', encrypt)
   .parse(process.argv);
   
   if (op.keygen) {

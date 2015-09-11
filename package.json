@@ -1,5 +1,5 @@
 {
-  "name": "maillock",
+  "name": "mailock",
   "version": "0.0.1",
   "description": "Send encrypted emails with OpenPGP.js.",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "github.com/gmontalvo5416/maillock.js"
+    "url": "github.com/gmontalvo5416/mailock.js"
   },
   "author": "Gabriel Montalvo",
   "license": "ISC",
