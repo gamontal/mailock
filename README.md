@@ -1,4 +1,2 @@
 Maillock
 ========
-
-## Work in progress.

@@ -44,39 +44,40 @@ function generate_key() {
 	
 	openpgp.generateKeyPair(options).then(function(keypair) {
 		
-		var privKey = keypair.privateKeyArmored;
-		var pubKey = keypair.publicKeyArmored;
+		var privKey = keypair.privateKeyArmored; // stores private key value
+		var pubKey = keypair.publicKeyArmored;   // stores public key value
 		
+		fs.writeFile("<" + usrinput.Email + ">" + "private.key", privKey, function(err) {
+			if(err) {
+				return console.log(err);
+			} else {
+				console.log("\nYour keys have been generated successfully. \n* As a security measure, make sure you keep your private.key file safe.\n");
+			}
+		}); 
 		
-		fs.writeFile("private.key", privKey, function(err) {
+		fs.writeFile("<" + usrinput.Email + ">" + "public.key", pubKey, function(err) {
 			if(err) {
 				return console.log(err);
 			}
 		}); 
-		
-		fs.writeFile("public.key", pubKey, function(err) {
-			if(err) {
-				return console.log(err);
-			}
-		}); 
-		
-		
+			
 	}).catch(function(error){
 		console.log("Error ocurred.");
 	});
 	
-	}
-	else {
+	} else {
 		console.log(err);
 	}
  });	
-}
+}	
 
-
+// ENCRYPTION
 /*
-// Encryption
-
-function encrypt(pubkey) {
+function encrypt(file) {  // takes a file has argument
+	
+	console.log("Looking for your key ...");
+	
+	
 	
 	var key = pubkey;
 	var publicKey = openpgp.key.readArmored(key);
@@ -86,10 +87,10 @@ function encrypt(pubkey) {
 	}).catch(function(error) {
 		// fail
 	});
-
 }
- 
+  */
 // Decryption
+/*
 function decrypt(privkey) {
 	
 	var key = '';
@@ -111,13 +112,19 @@ function decrypt(privkey) {
 function main() {
 	op
   .version('0.0.1')
-  .option('-g, --keygen', 'Generate a key pair.')
+  .usage('[options] <file ...>')
+  .option('-g, --keygen', 'Generate a key pair (They will be saved in your current directory).')
+  //.option('-e, --encrypt <f>', 'Encrypt a file.', encrypt)
   .parse(process.argv);
   
   if (op.keygen) {
+	  
 	  generate_key();
+	  
   }  else {
-	  console.log("error");
+	  
+	  console.log("An error ocurred.");
+	  
   }
 	
 }
