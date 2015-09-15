@@ -97,12 +97,12 @@ function generate_key() {
 }	
 
 
-function encryptfl(usrEmail, filename) { 
+function encryptfl(usrEmail, filepath) { 
 	
-	console.log("Looking for your key ...\n");
+	console.log("\nLooking for your key ...\n");
 	
 	var eml = usrEmail;
-	var txtFile = filename;
+	var txtFile = filepath;
 	
 	var pubKeyPath = path.join('usr','krg/') + eml + "-public.key";
 	
@@ -110,37 +110,121 @@ function encryptfl(usrEmail, filename) {
 		if(err === null) {
 			
 			var key = fs.readFileSync(pubKeyPath, 'utf8');
+			var publicKey = openpgp.key.readArmored(key);
 			
-			var testtext = "This is a normal sentence.";
+			openpgp.encryptMessage(publicKey.keys, txtFile).then(function(pgpMessage){
+				
+				var filename = path.basename(filepath);
+				
+				fs.writeFile("(encrypted)" + filename, pgpMessage, function(err) {
+				
+				if(err) {
+					return console.log(err);
+				} else {
+					console.log("\nEncryption was successful.\n");
+				}
 			
-			console.log(txtFile);
-			console.log('...\n');
-			
-			var publickey = openpgp.key.readArmored(key);
-			
-			openpgp.encryptMessage(publickey, testtext).then(function(pgpMessage){
-					console.log(pgpMessage);
-				}).catch(function(error) {
-					console.log(err);
 				}); 
+						
+			}).catch(function(error) {
+			console.log(err);
+		}); 
 			
 		} else if(err.code === 'ENOENT') {
-			console.log("No keys here.");
+			console.log("No keys here.\n");
 		} else {
 			console.log('Some other error: ', err.code);
 		}
 	});
 }
 
+
+function decryptfl(usrEmail, filepath) {
+	
+	console.log("\nLooking for your key ...\n");
+	
+	var eml = usrEmail;
+	var flpath = filepath; // encrypted message
+	
+	var privKeyPath = path.join('usr','krg/') + eml + "-private.key";
+
+	fs.stat(privKeyPath, function(err, stat) {
+		if(err === null) {
+		
+			var key = fs.readFileSync(privKeyPath, 'utf8');
+			var pgpMessage = fs.readFileSync(flpath, 'utf8');
+			
+			var privateKey = openpgp.key.readArmored(key).keys[0];
+
+			var schema = {
+				properties: {
+					Passphrase: {
+						required: true,
+						hidden: true
+					}
+				}
+			}
+
+			prompt.start();
+			
+			console.log("\n");
+			
+			prompt.get(schema, function (err, usrinput) {
+					
+				if (!err) {
+					var passwd = {
+					passphrase: usrinput.Passphrase
+					}
+				};	
+				
+				privateKey.decrypt(passwd.passphrase); 
+				
+				pgpMessage = openpgp.message.readArmored(pgpMessage);
+				
+				openpgp.decryptMessage(privateKey, pgpMessage).then(function(plaintext) {
+					
+					console.log(plaintext);
+					
+				}).catch(function(error) {
+					
+					console.log(err);
+				
+				});
+					
+			});
+		
+		} else if(err.code === 'ENOENT') {
+			console.log("No keys here.\n");
+		} else {
+			console.log('Some other error: ', err.code);
+		}
+		
+	});
+}
+  
+
 function main() {
 	
 	op
   .version('0.0.1')
-  .option('-g, --keygen', 'Generate a key pair (They will be saved in your current directory).')
-  .option('--listkeys', 'List keyring files.')
+  .usage('[option]')
+  .option('-g, --keygen', 'Generate a key pair')
+  .option('--listkeys', 'List keyring files')
+  
+  	op
   .command('encrypt <email> [file]')
+  .description('Encrypt a file')
   .action(function (email, filename) { 
-	  encryptfl(email, filename); 
+	  var filepth = "./" + filename;
+	  encryptfl(email, filepth); 
+  })
+  
+  	op
+  .command('decrypt <email> [file]')
+  .description('Decrypt a file')
+  .action(function (email, filename) { 
+	  var filepth = "./" + filename;
+	  decryptfl(email, filepth); 
   });
 
   op.parse(process.argv);
