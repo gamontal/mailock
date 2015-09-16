@@ -7,6 +7,9 @@ var openpgp = require('openpgp'),
 	op = require('commander'),
 	path = require("path");
 
+var base = process.env.PWD;
+var klocation = base + '/usr/krg/'; // key pair location
+
 main();
 
 function getk (dir, files_) {
@@ -64,11 +67,10 @@ function generate_key() {
 	
 	openpgp.generateKeyPair(options).then(function(keypair) {
 		
-		var kpth = path.join('usr','krg/');
 		var privKey = keypair.privateKeyArmored; 
 		var pubKey = keypair.publicKeyArmored;   
 		
-		fs.writeFile(kpth + usrinput.Email + "-private.key", privKey, function(err) {
+		fs.writeFile(klocation + usrinput.Email + "-private.key", privKey, function(err) {
 			
 			if(err) {
 				return console.log(err);
@@ -78,7 +80,7 @@ function generate_key() {
 			
 		}); 
 		
-		fs.writeFile(kpth + usrinput.Email + "-public.key", pubKey, function(err) {
+		fs.writeFile(klocation + usrinput.Email + "-public.key", pubKey, function(err) {
 			
 			if(err) {
 				return console.log(err);
@@ -96,7 +98,7 @@ function generate_key() {
  });	
 }	
 
-
+// ENCRYPTION
 function encryptfl(usrEmail, filepath) { 
 	
 	console.log("\nLooking for your key ...\n");
@@ -104,7 +106,7 @@ function encryptfl(usrEmail, filepath) {
 	var eml = usrEmail;
 	var txtFile = filepath;
 	
-	var pubKeyPath = path.join('usr','krg/') + eml + "-public.key";
+	var pubKeyPath = klocation + eml + "-public.key";
 	
 	fs.stat(pubKeyPath, function(err, stat) {
 		if(err === null) {
@@ -138,7 +140,7 @@ function encryptfl(usrEmail, filepath) {
 	});
 }
 
-
+/*
 function decryptfl(usrEmail, filepath) {
 	
 	console.log("\nLooking for your key ...\n");
@@ -201,7 +203,7 @@ function decryptfl(usrEmail, filepath) {
 		
 	});
 }
-  
+ */ 
 
 function main() {
 	
@@ -219,17 +221,17 @@ function main() {
 	  encryptfl(email, filepth); 
   })
   
-  	op
+  /*	op
   .command('decrypt <email> [file]')
   .description('Decrypt a file')
   .action(function (email, filename) { 
 	  var filepth = "./" + filename;
 	  decryptfl(email, filepth); 
   });
-
+*/
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }
-  else if (op.listkeys) { console.log(getk(path.join('usr','krg'))); }
+  else if (op.listkeys) { console.log(getk(klocation)); }
 
 }
