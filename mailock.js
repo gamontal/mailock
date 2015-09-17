@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+'use strict';
 var openpgp = require('openpgp'),
 	readline = require('readline'),
 	prompt = require('prompt'),
@@ -143,7 +144,7 @@ function encryptfl(usrEmail, filepath) {
 			console.log("No keys here.\n");
 			
 		} else {
-			console.log('Some other error: ', err.code);
+			console.log(err.code);
 		}
 	});
 }
