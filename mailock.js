@@ -150,68 +150,7 @@ function encryptfl(usrEmail, filepath) {
 }
 
 /*
-function decryptfl(usrEmail, filepath) {
-	
-	console.log("\nLooking for your key ...\n");
-	
-	var eml = usrEmail;
-	var flpath = filepath; // encrypted message
-	
-	var privKeyPath = path.join('usr','krg/') + eml + "-private.key";
-
-	fs.stat(privKeyPath, function(err, stat) {
-		if(err === null) {
-		
-			var key = fs.readFileSync(privKeyPath, 'utf8');
-			var pgpMessage = fs.readFileSync(flpath, 'utf8');
-			
-			var privateKey = openpgp.key.readArmored(key).keys[0];
-
-			var schema = {
-				properties: {
-					Passphrase: {
-						required: true,
-						hidden: true
-					}
-				}
-			}
-
-			prompt.start();
-			
-			console.log("\n");
-			
-			prompt.get(schema, function (err, usrinput) {
-					
-				if (!err) {
-					var passwd = {
-					passphrase: usrinput.Passphrase
-					}
-				};	
-				
-				privateKey.decrypt(passwd.passphrase); 
-				
-				pgpMessage = openpgp.message.readArmored(pgpMessage);
-				
-				openpgp.decryptMessage(privateKey, pgpMessage).then(function(plaintext) {
-					
-					console.log(plaintext);
-					
-				}).catch(function(error) {
-					
-					console.log(err);
-				
-				});
-					
-			});
-		
-		} else if(err.code === 'ENOENT') {
-			console.log("No keys here.\n");
-		} else {
-			console.log('Some other error: ', err.code);
-		}
-		
-	});
-}
+function decryptfl(usrEmail, filepath) {}
  */ 
 
 function main() {
