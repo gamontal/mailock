@@ -7,8 +7,8 @@ var openpgp = require('openpgp'),
 	op = require('commander'),
 	path = require("path");
 
-var base = process.env.PWD;
-var klocation = base + '/usr/krg/'; // key pair location
+var base = path.dirname(require.main.filename);
+var keyloc = base + '/usr/krg/'; // key pair location
 
 main();
 
@@ -17,7 +17,7 @@ function getk (dir, files_) {
     var files = fs.readdirSync(dir);
 		for (var i in files){
 			if(path.extname(files[i]) === ".key") {
-				var name = dir + '/' + files[i];
+				var name = dir + files[i];
 				if (fs.statSync(name).isDirectory()){
 					getFiles(name, files_);
 				} else {
@@ -70,7 +70,7 @@ function generate_key() {
 		var privKey = keypair.privateKeyArmored; 
 		var pubKey = keypair.publicKeyArmored;   
 		
-		fs.writeFile(klocation + usrinput.Email + "-private.key", privKey, function(err) {
+		fs.writeFile(keyloc + usrinput.Email + "-private.key", privKey, function(err) {
 			
 			if(err) {
 				return console.log(err);
@@ -80,7 +80,7 @@ function generate_key() {
 			
 		}); 
 		
-		fs.writeFile(klocation + usrinput.Email + "-public.key", pubKey, function(err) {
+		fs.writeFile(keyloc + usrinput.Email + "-public.key", pubKey, function(err) {
 			
 			if(err) {
 				return console.log(err);
@@ -104,24 +104,27 @@ function encryptfl(usrEmail, filepath) {
 	console.log("\nLooking for your key ...\n");
 	
 	var eml = usrEmail;
-	var txtFile = filepath;
 	
-	var pubKeyPath = klocation + eml + "-public.key";
+	var base_fl_name = path.basename(filepath);
+	var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
+	
+	var pubKeyPath = keyloc + eml + "-public.key";
 	
 	fs.stat(pubKeyPath, function(err, stat) {
+		
 		if(err === null) {
 			
 			var key = fs.readFileSync(pubKeyPath, 'utf8');
 			var publicKey = openpgp.key.readArmored(key);
 			
-			openpgp.encryptMessage(publicKey.keys, txtFile).then(function(pgpMessage){
+			openpgp.encryptMessage(publicKey.keys, filepath).then(function(pgpMessage){
 				
-				var filename = path.basename(filepath);
-				
-				fs.writeFile("(encrypted)" + filename, pgpMessage, function(err) {
+				fs.writeFile("encrypted-" + filename + '.asc', pgpMessage, function(err) {
 				
 				if(err) {
+					
 					return console.log(err);
+					
 				} else {
 					console.log("\nEncryption was successful.\n");
 				}
@@ -129,11 +132,14 @@ function encryptfl(usrEmail, filepath) {
 				}); 
 						
 			}).catch(function(error) {
+				
 			console.log(err);
 		}); 
 			
 		} else if(err.code === 'ENOENT') {
+			
 			console.log("No keys here.\n");
+			
 		} else {
 			console.log('Some other error: ', err.code);
 		}
@@ -232,6 +238,6 @@ function main() {
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }
-  else if (op.listkeys) { console.log(getk(klocation)); }
+  else if (op.listkeys) { console.log(getk(keyloc)); }
 
 }
