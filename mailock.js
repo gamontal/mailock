@@ -9,8 +9,6 @@ var openpgp = require('openpgp'),
 	path = require("path");
 
 
-
-
 var base = path.dirname(require.main.filename);
 var keyloc = base + '/usr/krg/'; // key pair location
 
@@ -71,8 +69,8 @@ function generate_key() {
 	
 	openpgp.generateKeyPair(options).then(function(keypair) {
 		
-		var privKey = keypair.privateKeyArmored; 
-		var pubKey = keypair.publicKeyArmored;   
+		var privKey = keypair.privateKeyArmored;
+		var pubKey = keypair.publicKeyArmored;
 		
 		fs.writeFile(keyloc + usrinput.Email + "-private.key", privKey, function(err) {
 			
@@ -103,7 +101,7 @@ function generate_key() {
 }	
 
 
-function encryptfl(usrEmail, filepath) { 
+function encryptfl(usrEmail, filepath) {
 	
 	console.log("\nLooking for your key ...\n");
 	
@@ -137,7 +135,7 @@ function encryptfl(usrEmail, filepath) {
 						
 			}).catch(function(error) {
 				console.log(err);
-			}); 
+			});
 			
 		} else if(err.code === 'ENOENT') {
 			
@@ -164,9 +162,9 @@ function main() {
   	op
   .command('encrypt <email> [file]')
   .description('Encrypt a file')
-  .action(function (email, filename) { 
+  .action(function (email, filename) {
 	  var filepth = "./" + filename;
-	  encryptfl(email, filepth); 
+	  encryptfl(email, filepth);
   })
   
   /*	op
