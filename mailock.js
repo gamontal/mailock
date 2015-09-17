@@ -7,6 +7,9 @@ var openpgp = require('openpgp'),
 	op = require('commander'),
 	path = require("path");
 
+
+
+
 var base = path.dirname(require.main.filename);
 var keyloc = base + '/usr/krg/'; // key pair location
 
@@ -24,8 +27,8 @@ function getk (dir, files_) {
 					files_.push(name);
 				}
 			}
-    }
-    return files_;
+        }
+  return files_;
 } 
 
 function generate_key() {
@@ -98,7 +101,7 @@ function generate_key() {
  });	
 }	
 
-// ENCRYPTION
+
 function encryptfl(usrEmail, filepath) { 
 	
 	console.log("\nLooking for your key ...\n");
@@ -121,20 +124,19 @@ function encryptfl(usrEmail, filepath) {
 				
 				fs.writeFile("encrypted-" + filename + '.asc', pgpMessage, function(err) {
 				
-				if(err) {
-					
-					return console.log(err);
-					
-				} else {
-					console.log("\nEncryption was successful.\n");
-				}
+					if(err) {
+						
+						return console.log(err);
+						
+					} else {
+						console.log("\nEncryption was successful.\n");
+					}
 			
 				}); 
 						
 			}).catch(function(error) {
-				
-			console.log(err);
-		}); 
+				console.log(err);
+			}); 
 			
 		} else if(err.code === 'ENOENT') {
 			
