@@ -137,7 +137,7 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 			
 		} else if(err.code === 'ENOENT') { // no keys found
 			
-			console.log("No keys here.\n");
+			console.log("\nNo keys here.\n");
 			
 		} else {
 			console.log(err.code);
@@ -194,7 +194,7 @@ function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted me
 			});
 				
 		} else if(err.code === 'ENOENT') {
-			console.log("No keys here.\n");
+			console.log("\nNo keys here.\n");
 		} else {
 			console.log(err.code);
 		}		
@@ -206,12 +206,12 @@ function main() {
 	
 	op
   .version('0.0.1')
-  .usage('[option]')
+  .usage('[option] [command]')
   .option('-g, --keygen', 'Generate a key pair')
-  .option('--listkeys', 'List keyring files')
+  .option('-l, --lstkeys', 'List keyring files')
   
   	op
-  .command('encrypt <email> [file]')
+  .command('encrypt <email> <file>')
   .description('Encrypt a file')
   .action(function (email, filename) {
 	  var filepath = "./" + filename;
@@ -219,7 +219,7 @@ function main() {
   })
   
   	op
-  .command('decrypt <email> [file]')
+  .command('decrypt <email> <file>')
   .description('Decrypt a file')
   .action(function (email, filename) { 
 	  var filepath = "./" + filename;
@@ -229,6 +229,6 @@ function main() {
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }
-  else if (op.listkeys) { console.log(getk(keyloc)); }
+  else if (op.lstkeys) { console.log(getk(keyloc)); }
 
 }
