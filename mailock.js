@@ -6,7 +6,7 @@ var openpgp = require('openpgp'),
 	prompt = require('prompt'),
 	fs = require('fs'),
 	op = require('commander'),
-	path = require("path");
+	path = require('path');
 
 
 var base = path.dirname(require.main.filename);
@@ -14,7 +14,7 @@ var keyloc = base + '/usr/krg/'; // key pair location
 
 main();
 
-function getk (dir, files_) {
+function lstkey (dir, files_) {
     files_ = files_ || [];
     var files = fs.readdirSync(dir);
 		for (var i in files){
@@ -30,35 +30,54 @@ function getk (dir, files_) {
   return files_;
 } 
 
-function generate_key() {
+function GetPass() {
 	
-	var schema = {
+	var UsrPass = {
 		properties: {
-			Keylength: {
-				required: true,
-				pattern: /^-?\d+\.?\d*$/,
-				message: 'Please enter an integer value.'
-			},
-			Name: {
-				pattern: /^[a-zA-Z\s\-]+$/,
-				required: true
-			},
-			Email: {
-				// RFC 2822 standard
-				pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-				required: true,
-			},
 			Passphrase: {
 				required: true,
 				hidden: true
 			}
 		}
 	}
-	
 	prompt.start();
+		return UsrPass;
+}
+
+function GetUsrInfo() {
+	
+	var UserInf = {
+			properties: {
+				Keylength: {
+					required: true,
+					pattern: /^-?\d+\.?\d*$/,
+					message: 'Please enter an integer value.'
+				},
+				Name: {
+					pattern: /^[a-zA-Z\s\-]+$/,
+					required: true
+				},
+				Email: {
+					// RFC 2822 standard
+					pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+					required: true,
+				},
+				Passphrase: {
+					required: true,
+					hidden: true
+				}
+			}
+		}
+		prompt.start();
+			return UserInf;
+}
+
+function generate_key() {
+	
+	var usrinfo = GetUsrInfo();
 	
 	console.log("\n");
-	prompt.get(schema, function (err, usrinput) {
+	prompt.get(usrinfo, function (err, usrinput) {
 		
 	if (!err) {
 		var options = {
@@ -77,7 +96,7 @@ function generate_key() {
 			if(err) {
 				return console.log(err);
 			} else {
-				console.log("\nYour keys have been generated successfully. \n* As a security measure, make sure you keep a copy of your private.key file safe.\n");
+				console.log("\nYour keys have been generated successfully.\n* As a security measure, make sure you keep a copy of your private.key file safe.\n");
 			}
 			
 		}); 
@@ -102,15 +121,12 @@ function generate_key() {
 
 
 function encryptfl(usrEmail, filepath) { // filepath == path to the text file
-	
-	console.log("\nLooking for your key ...\n");
-	
+
 	var eml = usrEmail;
+	var pubKeyPath = keyloc + eml + "-public.key";
 	
 	var base_fl_name = path.basename(filepath);
 	var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
-	
-	var pubKeyPath = keyloc + eml + "-public.key";
 	
 	fs.stat(pubKeyPath, function(err, stat) { // check if key exists
 		
@@ -137,7 +153,7 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 			
 		} else if(err.code === 'ENOENT') { // no keys found
 			
-			console.log("\nNo keys here.\n");
+			console.log("\nNo keys here. Type --help for information.\n");
 			
 		} else {
 			console.log(err.code);
@@ -148,7 +164,6 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted message
 	
 	var eml = usrEmail;
-	
 	var privKeyPath = keyloc + eml + "-private.key";
 	
 	fs.stat(privKeyPath, function(err, stat) {
@@ -158,16 +173,7 @@ function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted me
 			var key = fs.readFileSync(privKeyPath, 'utf8');
 			var privateKey = openpgp.key.readArmored(key).keys[0];
 			
-			var usrpass = {
-    			properties: {
-					Passphrase: {
-						required: true,
-						hidden: true
-					}
-				}
-			};
-			
-			prompt.start();
+			var usrpass = GetPass();
 			
 			prompt.get(usrpass, function (err, result) {
 				
@@ -208,7 +214,7 @@ function main() {
   .version('0.0.1')
   .usage('[option] [command]')
   .option('-g, --keygen', 'Generate a key pair')
-  .option('-l, --lstkeys', 'List keyring files')
+  .option('-l, --lstkeys', 'List keyring files, defaults to ~/../mailock/usr/krg/')
   
   	op
   .command('encrypt <email> <file>')
@@ -229,6 +235,6 @@ function main() {
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }
-  else if (op.lstkeys) { console.log(getk(keyloc)); }
+  else if (op.lstkeys) { console.log(lstkey(keyloc)); }
 
 }
