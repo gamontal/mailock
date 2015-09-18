@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
+'use strict';
 var openpgp = require('openpgp'),
 	readline = require('readline'),
 	prompt = require('prompt'),
 	fs = require('fs'),
 	op = require('commander'),
 	path = require("path");
-
-
 
 
 var base = path.dirname(require.main.filename);
@@ -70,8 +69,8 @@ function generate_key() {
 	
 	openpgp.generateKeyPair(options).then(function(keypair) {
 		
-		var privKey = keypair.privateKeyArmored; 
-		var pubKey = keypair.publicKeyArmored;   
+		var privKey = keypair.privateKeyArmored;
+		var pubKey = keypair.publicKeyArmored;
 		
 		fs.writeFile(keyloc + usrinput.Email + "-private.key", privKey, function(err) {
 			
@@ -102,7 +101,7 @@ function generate_key() {
 }	
 
 
-function encryptfl(usrEmail, filepath) { 
+function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 	
 	console.log("\nLooking for your key ...\n");
 	
@@ -113,7 +112,7 @@ function encryptfl(usrEmail, filepath) {
 	
 	var pubKeyPath = keyloc + eml + "-public.key";
 	
-	fs.stat(pubKeyPath, function(err, stat) {
+	fs.stat(pubKeyPath, function(err, stat) { // check if key exists
 		
 		if(err === null) {
 			
@@ -125,93 +124,80 @@ function encryptfl(usrEmail, filepath) {
 				fs.writeFile("encrypted-" + filename + '.asc', pgpMessage, function(err) {
 				
 					if(err) {
-						
 						return console.log(err);
-						
 					} else {
 						console.log("\nEncryption was successful.\n");
 					}
-			
-				}); 
-						
+				}); 		
 			}).catch(function(error) {
 				console.log(err);
-			}); 
+			});
 			
-		} else if(err.code === 'ENOENT') {
+		} else if(err.code === 'ENOENT') { // no keys found
 			
 			console.log("No keys here.\n");
 			
 		} else {
-			console.log('Some other error: ', err.code);
+			console.log(err.code);
 		}
 	});
 }
 
-/*
-function decryptfl(usrEmail, filepath) {
-	
-	console.log("\nLooking for your key ...\n");
+function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted message
 	
 	var eml = usrEmail;
-	var flpath = filepath; // encrypted message
 	
-	var privKeyPath = path.join('usr','krg/') + eml + "-private.key";
-
+	var privKeyPath = keyloc + eml + "-private.key";
+	
 	fs.stat(privKeyPath, function(err, stat) {
-		if(err === null) {
 		
-			var key = fs.readFileSync(privKeyPath, 'utf8');
-			var pgpMessage = fs.readFileSync(flpath, 'utf8');
+		if(err === null) { 
 			
+			var key = fs.readFileSync(privKeyPath, 'utf8');
 			var privateKey = openpgp.key.readArmored(key).keys[0];
-
-			var schema = {
-				properties: {
+			
+			var usrpass = {
+    			properties: {
 					Passphrase: {
 						required: true,
 						hidden: true
 					}
 				}
-			}
-
+			};
+			
 			prompt.start();
 			
-			console.log("\n");
-			
-			prompt.get(schema, function (err, usrinput) {
+			prompt.get(usrpass, function (err, result) {
+				
+				if (err) {
+					return console.log(err);
+				} else {
+
+					if (privateKey.decrypt(result.Passphrase)) {
+						
+					var enc_message = openpgp.message.readArmored(filepath);
 					
-				if (!err) {
-					var passwd = {
-					passphrase: usrinput.Passphrase
+					
+					openpgp.decryptMessage(privateKey, enc_message).then(function(plaintext) {
+						console.log(plaintext);
+					}).catch(function(error) {
+						console.log(err);
+					});	 
+					
+					} else {
+						console.log('Passphrase is incorrect.')
 					}
-				};	
-				
-				privateKey.decrypt(passwd.passphrase); 
-				
-				pgpMessage = openpgp.message.readArmored(pgpMessage);
-				
-				openpgp.decryptMessage(privateKey, pgpMessage).then(function(plaintext) {
-					
-					console.log(plaintext);
-					
-				}).catch(function(error) {
-					
-					console.log(err);
-				
-				});
-					
+				}
 			});
-		
+				
 		} else if(err.code === 'ENOENT') {
 			console.log("No keys here.\n");
 		} else {
-			console.log('Some other error: ', err.code);
-		}
-		
-	});
+			console.log(err.code);
+		}		
+	});	
 }
- */ 
+ 
 
 function main() {
 	
@@ -224,19 +210,19 @@ function main() {
   	op
   .command('encrypt <email> [file]')
   .description('Encrypt a file')
-  .action(function (email, filename) { 
-	  var filepth = "./" + filename;
-	  encryptfl(email, filepth); 
+  .action(function (email, filename) {
+	  var filepath = "./" + filename;
+	  encryptfl(email, filepath);
   })
   
-  /*	op
+  	op
   .command('decrypt <email> [file]')
   .description('Decrypt a file')
   .action(function (email, filename) { 
-	  var filepth = "./" + filename;
-	  decryptfl(email, filepth); 
+	  var filepath = "./" + filename;
+	  decryptfl(email, filepath); 
   });
-*/
+  
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }

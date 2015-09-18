@@ -1,19 +1,32 @@
 {
   "name": "mailock",
-  "version": "0.0.1",
+  "author": "Gabriel Montalvo",
   "description": "Send encrypted emails with OpenPGP.js.",
-  "main": "index.js",
+  "version": "0.0.1",
+  "licenses": [{
+		"type": "GNU General Public License Version 3",
+		"url": "http://www.gnu.org/copyleft/gpl.html"
+	}],
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/gmontalvoriv/mailock"
+	},
+  "bugs": {
+		"url": "https://github.com/kaepora/npwd/issues"
+	},
+  "main": "mailock.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "github.com/gmontalvo5416/mailock.js"
+    "url": "github.com/gmontalvoriv/mailock"
   },
-  "author": "Gabriel Montalvo",
-  "license": "ISC",
+  "keywords": [
+		"mail encryption"
+	],
+  "preferGlobal": true,
   "dependencies": {
-    "app-root-path": "^1.0.0",
     "commander": "^2.8.1",
     "openpgp": "^1.2.0",
     "prompt": "^0.2.14"
