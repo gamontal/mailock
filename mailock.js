@@ -77,7 +77,7 @@ function generate_key() {
 			if(err) {
 				return console.log(err);
 			} else {
-				console.log("\nYour keys have been generated successfully. \n* As a security measure, make sure you keep your private.key file safe.\n");
+				console.log("\nYour keys have been generated successfully. \n* As a security measure, make sure you keep a copy of your private.key file safe.\n");
 			}
 			
 		}); 
@@ -120,8 +120,6 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 			var publicKey = openpgp.key.readArmored(key);
 			
 			var message = fs.readFileSync(filepath, "utf8");
-			
-			console.log(message);
 			
 			openpgp.encryptMessage(publicKey.keys, message).then(function(pgpMessage){
 				
