@@ -119,7 +119,11 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 			var key = fs.readFileSync(pubKeyPath, 'utf8');
 			var publicKey = openpgp.key.readArmored(key);
 			
-			openpgp.encryptMessage(publicKey.keys, filepath).then(function(pgpMessage){
+			var message = fs.readFileSync(filepath, "utf8");
+			
+			console.log(message);
+			
+			openpgp.encryptMessage(publicKey.keys, message).then(function(pgpMessage){
 				
 				fs.writeFile("encrypted-" + filename + '.asc', pgpMessage, function(err) {
 				
@@ -173,15 +177,16 @@ function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted me
 					return console.log(err);
 				} else {
 
-					if (privateKey.decrypt(result.Passphrase)) {
-						
-					var enc_message = openpgp.message.readArmored(filepath);
+					if (privateKey.decrypt(result.Passphrase)) { // validates passpharse
+					
+					var enc_message = fs.readFileSync(filepath, "utf8");
+				    enc_message = openpgp.message.readArmored(enc_message);
 					
 					
 					openpgp.decryptMessage(privateKey, enc_message).then(function(plaintext) {
 						console.log(plaintext);
 					}).catch(function(error) {
-						console.log(err);
+						console.log(error);
 					});	 
 					
 					} else {
