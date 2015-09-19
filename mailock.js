@@ -30,6 +30,12 @@ function lstkey (dir, files_) {
   return files_;
 } 
 
+function GetFileName(filepath) {
+	var base_fl_name = path.basename(filepath);
+	var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
+		return filename;
+}
+
 function GetPass() {
 	
 	var UsrPass = {
@@ -120,13 +126,12 @@ function generate_key() {
 }	
 
 
-function encryptfl(usrEmail, filepath) { // filepath == path to the text file
+function encryptfl(usrEml, filepath) { // filepath == path to the text file
 
-	var eml = usrEmail;
+	var eml = usrEml;
 	var pubKeyPath = keyloc + eml + "-public.key";
 	
-	var base_fl_name = path.basename(filepath);
-	var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
+	var filename = GetFileName(filepath);
 	
 	fs.stat(pubKeyPath, function(err, stat) { // check if key exists
 		
@@ -161,9 +166,9 @@ function encryptfl(usrEmail, filepath) { // filepath == path to the text file
 	});
 }
 
-function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted message
+function decryptfl(usrEml, filepath) { // filepath == path to the encrypted message
 	
-	var eml = usrEmail;
+	var eml = usrEml;
 	var privKeyPath = keyloc + eml + "-private.key";
 	
 	fs.stat(privKeyPath, function(err, stat) {
@@ -206,6 +211,56 @@ function decryptfl(usrEmail, filepath) { // filepath == path to the encrypted me
 		}		
 	});	
 }
+
+function signmsg(usrEml, filepath) {
+	
+	var eml = usrEml;
+	var privKeyPath = keyloc + eml + "-private.key";
+	
+	var filename = GetFileName(filepath);
+	
+	fs.stat(privKeyPath, function(err, stat) {
+		if(err === null) { 
+			
+			var key = fs.readFileSync(privKeyPath, 'utf8');
+			var privateKey = openpgp.key.readArmored(key).keys[0];
+			
+			var usrpass = GetPass();
+			
+			prompt.get(usrpass, function (err, result) {
+				
+				if (err) {
+					return console.log(err);
+				} else {
+					if (privateKey.decrypt(result.Passphrase)) {
+					
+					var message = fs.readFileSync(filepath, "utf8");
+					
+					var signedMsg = openpgp.signClearMessage(privateKey, message);
+					
+					fs.writeFile("signed-" + filename + ".txt", signedMsg, function(err) {
+						
+						if(err) {
+							return console.log(err);
+						} else {
+							console.log("\nMessage is signed.\n");
+						}
+						
+					}); 	
+					
+					} else {
+						console.log('Passphrase is incorrect.');
+					}	
+				}
+			});	
+			
+		} else if(err.code === 'ENOENT') {
+			console.log("\nNo keys here.\n");
+		} else {
+			console.log(err.code);
+		}	
+	});
+}
  
 
 function main() {
@@ -230,6 +285,14 @@ function main() {
   .action(function (email, filename) { 
 	  var filepath = "./" + filename;
 	  decryptfl(email, filepath); 
+  });
+  
+  	op
+  .command('sign <email> <file>')
+  .description('Sign message')
+  .action(function (email, filename) { 
+	  var filepath = "./" + filename;
+	  signmsg(email, filepath); 
   });
   
   op.parse(process.argv);
