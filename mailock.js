@@ -6,8 +6,8 @@ var openpgp = require('openpgp'),
 	prompt = require('prompt'),
 	fs = require('fs'),
 	op = require('commander'),
+	nodemailer = require('nodemailer'),
 	path = require('path');
-
 
 var base = path.dirname(require.main.filename);
 var keyloc = base + '/usr/krg/'; // key pair location
@@ -76,6 +76,25 @@ function GetUsrInfo() {
 		}
 		prompt.start();
 			return UserInf;
+}
+
+function compose_email() {
+	
+	var emlInf = {
+			properties: {
+				Password: {
+					required: true,
+					pattern: /^-?\d+\.?\d*$/,
+					message: 'Please enter an integer value.'
+				},
+				Subject: {
+					pattern: /^[a-zA-Z\s\-]+$/,
+					required: true
+				}
+			}
+		}
+		prompt.start();
+			return emlInf;
 }
 
 function generate_key() {
@@ -262,6 +281,35 @@ function signmsg(usrEml, filepath) {
 	});
 }
  
+ 
+function send_mail(usrEml, filepath) {
+	
+	var eml = usrEml;
+	
+	var emlInf = compose_email();
+	
+	prompt.get(emlInf, function (err, result) {
+				
+		if (err) {
+			return console.log(err);
+		} else {
+			var transporter = nodemailer.createTransport({
+				service: 'gmail',
+				auth: {
+					user: eml,
+					pass: 'password'
+				}
+			});
+			transporter.sendMail({
+				from: eml,
+				to: 'receiver@address',
+				subject: 'hello',
+				text: 'hello world!'
+			});
+		}
+	});
+}
+
 
 function main() {
 	
@@ -293,6 +341,14 @@ function main() {
   .action(function (email, filename) { 
 	  var filepath = "./" + filename;
 	  signmsg(email, filepath); 
+  });
+  
+    op
+  .command('send <email> <file>')
+  .description('Email message')
+  .action(function (email, filename) { 
+	  var filepath = "./" + filename;
+	  send_mail(email, filepath); 
   });
   
   op.parse(process.argv);
