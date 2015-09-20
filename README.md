@@ -8,7 +8,7 @@
 
 ## Encryption
 
-`mailock encrypt <user@someserver.com> plaintextFile`
+`mailock encrypt user@someserver.com plaintextFile`
 
 ## Decryption
 
