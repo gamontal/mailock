@@ -12,8 +12,6 @@ var openpgp = require('openpgp'),
 var base = path.dirname(require.main.filename);
 var keyloc = base + '/usr/krg/'; // key pair location
 
-main();
-
 function lstkey (dir, files_) {
     files_ = files_ || [];
     var files = fs.readdirSync(dir);
@@ -243,21 +241,22 @@ function signmsg(usrEml, filepath) {
 			
 			var key = fs.readFileSync(privKeyPath, 'utf8');
 			var privateKey = openpgp.key.readArmored(key).keys[0];
-			
 			var usrpass = GetPass();
 			
 			prompt.get(usrpass, function (err, result) {
 				
 				if (err) {
+					
 					return console.log(err);
+					
 				} else {
-					if (privateKey.decrypt(result.Passphrase)) {
 					
+					if (privateKey.decrypt(result.Passphrase)) { // passphrase validation
 					var message = fs.readFileSync(filepath, "utf8");
-					
-					var signedMsg = openpgp.signClearMessage(privateKey, message);
-					
-					fs.writeFile("signed-" + filename + ".txt", signedMsg, function(err) {
+
+				    openpgp.signClearMessage(privateKey, message).then(function(signedMsg) {
+						
+						fs.writeFile("signed-" + filename + ".txt", signedMsg, function(err) {
 						
 						if(err) {
 							return console.log(err);
@@ -265,7 +264,8 @@ function signmsg(usrEml, filepath) {
 							console.log("\nMessage is signed.\n");
 						}
 						
-					}); 	
+						});
+					});
 					
 					} else {
 						console.log('Passphrase is incorrect.');
@@ -357,3 +357,5 @@ function main() {
   else if (op.lstkeys) { console.log(lstkey(keyloc)); }
 
 }
+
+main();
