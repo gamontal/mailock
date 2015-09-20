@@ -82,11 +82,13 @@ function compose_email() {
 			properties: {
 				Password: {
 					required: true,
-					pattern: /^-?\d+\.?\d*$/,
-					message: 'Please enter an integer value.'
+					hidden: true
+				},
+				To: {
+					pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+					required: true
 				},
 				Subject: {
-					pattern: /^[a-zA-Z\s\-]+$/,
 					required: true
 				}
 			}
@@ -143,9 +145,8 @@ function generate_key() {
 }	
 
 
-function encryptfl(usrEml, filepath) { // filepath == path to the text file
+function encryptfl(eml, filepath) { // filepath == path to the text file
 
-	var eml = usrEml;
 	var pubKeyPath = keyloc + eml + "-public.key";
 	
 	var filename = GetFileName(filepath);
@@ -183,9 +184,8 @@ function encryptfl(usrEml, filepath) { // filepath == path to the text file
 	});
 }
 
-function decryptfl(usrEml, filepath) { // filepath == path to the encrypted message
-	
-	var eml = usrEml;
+function decryptfl(eml, filepath) { // filepath == path to the encrypted message
+
 	var privKeyPath = keyloc + eml + "-private.key";
 	
 	fs.stat(privKeyPath, function(err, stat) {
@@ -229,9 +229,8 @@ function decryptfl(usrEml, filepath) { // filepath == path to the encrypted mess
 	});	
 }
 
-function signmsg(usrEml, filepath) {
+function signmsg(eml, filepath) {
 	
-	var eml = usrEml;
 	var privKeyPath = keyloc + eml + "-private.key";
 	
 	var filename = GetFileName(filepath);
@@ -284,9 +283,8 @@ function signmsg(usrEml, filepath) {
 	});
 }
 
-function verify_sign(usrEml, filepath) {
+function verify_sign(eml, filepath) {
 	
-	var eml = usrEml;
 	var pubKeyPath = keyloc + eml + "-public.key";
 	var key = fs.readFileSync(pubKeyPath, 'utf8');
 	
@@ -311,9 +309,55 @@ function verify_sign(usrEml, filepath) {
 			}
 		}
 		console.log("Valid signature: " + valid_message);
-	}).catch(function(error) {
-		console.log(error);
+	}).catch(function(err) {
+		console.log(err);
    });	
+}
+
+function send_mail(eml, filepath) {
+	
+	var emlinf = compose_email();
+	
+	var bodymsg = fs.readFileSync(filepath, "utf8");
+	
+	prompt.get(emlinf, function (err, result) {
+		
+		if (err) {
+			return console.log(err);
+		} else {
+		
+		var transporter = nodemailer.createTransport({ // SMTP transporter object
+			service: 'Gmail',
+			auth: {
+				user: eml,
+				pass: result.Password
+			}
+		});
+		
+		console.log('SMTP Configured');
+
+		var message = {
+			
+			from: eml,
+			to: result.To,
+			subject: result.Subject,
+			text: bodymsg
+				
+		}
+
+		console.log('Sending mail ...');
+		transporter.sendMail(message, function(error, info) {
+			if (error) {
+				console.log('Error occurred');
+				console.log(error.message);
+				return;
+			}
+			console.log('Message sent successfully!');
+			console.log('Server responded with "%s"', info.response);
+		}); 
+		
+		}	
+	})	
 }
 
 function main() {
@@ -354,6 +398,14 @@ function main() {
   .action(function (email, filename) { 
 	  var filepath = "./" + filename;
 	  verify_sign(email, filepath); 
+  });
+  
+    op
+  .command('send <email> <file>')
+  .description('Send email')
+  .action(function (email, filename) { 
+	  var filepath = "./" + filename;
+	  send_mail(email, filepath); 
   });
   
   op.parse(process.argv);
