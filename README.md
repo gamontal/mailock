@@ -6,6 +6,12 @@
 
 `npm install -g mailock`
 
+## Key Pair generation
+
+Generate your private and public keys.
+
+`mailock --keygen`
+
 ## Encryption
 
 `mailock encrypt user@someserver.com plaintextFile`
