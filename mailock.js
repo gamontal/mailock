@@ -265,7 +265,10 @@ function signmsg(usrEml, filepath) {
 						}
 						
 						});
-					});
+						
+					}).catch(function(error) {
+						console.log(error);
+					});	
 					
 					} else {
 						console.log('Passphrase is incorrect.');
@@ -280,36 +283,38 @@ function signmsg(usrEml, filepath) {
 		}	
 	});
 }
- 
- 
-function send_mail(usrEml, filepath) {
+
+function verify_sign(usrEml, filepath) {
 	
 	var eml = usrEml;
+	var pubKeyPath = keyloc + eml + "-public.key";
+	var key = fs.readFileSync(pubKeyPath, 'utf8');
 	
-	var emlInf = compose_email();
+	var publicKey = openpgp.key.readArmored(key).keys[0];
 	
-	prompt.get(emlInf, function (err, result) {
+	var signedMsg = fs.readFileSync(filepath, "utf8");
+	signedMsg = openpgp.cleartext.readArmored(signedMsg);
+	
+	openpgp.verifyClearSignedMessage(publicKey, signedMsg).then(function(result) {
+		
+		var valid_message = false;
+		
+		if ('signatures' in result) {
+			var signatures = result['signatures'];
+			
+			if (signatures.length > 0) {
+				var signature = signatures[0];
 				
-		if (err) {
-			return console.log(err);
-		} else {
-			var transporter = nodemailer.createTransport({
-				service: 'gmail',
-				auth: {
-					user: eml,
-					pass: 'password'
+				if ('valid' in signature) {
+					valid_message = signature['valid'];
 				}
-			});
-			transporter.sendMail({
-				from: eml,
-				to: 'receiver@address',
-				subject: 'hello',
-				text: 'hello world!'
-			});
+			}
 		}
-	});
+		console.log("Valid signature: " + valid_message);
+	}).catch(function(error) {
+		console.log(error);
+   });	
 }
-
 
 function main() {
 	
@@ -344,11 +349,11 @@ function main() {
   });
   
     op
-  .command('send <email> <file>')
-  .description('Email message')
+  .command('verify <email> <file>')
+  .description('Verify Signature')
   .action(function (email, filename) { 
 	  var filepath = "./" + filename;
-	  send_mail(email, filepath); 
+	  verify_sign(email, filepath); 
   });
   
   op.parse(process.argv);
