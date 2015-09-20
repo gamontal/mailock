@@ -1,33 +1,32 @@
 {
   "name": "mailock",
   "author": "Gabriel Montalvo",
-  "description": "Send encrypted emails with OpenPGP.js.",
-  "version": "0.0.1",
-  "licenses": [{
-		"type": "GNU General Public License Version 3",
-		"url": "http://www.gnu.org/copyleft/gpl.html"
-	}],
-  "repository": {
-		"type": "git",
-		"url": "https://github.com/gmontalvoriv/mailock"
-	},
-  "bugs": {
-		"url": "https://github.com/kaepora/npwd/issues"
-	},
-  "main": "mailock.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "A command-line utility to send encrypted emails via SMTP with OpenPGP.js.",
+  "version": "0.0.2",
+  "licenses": [
+    {
+      "type": "GNU General Public License Version 3",
+      "url": "http://www.gnu.org/copyleft/gpl.html"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "github.com/gmontalvoriv/mailock"
   },
+  "bugs": {
+    "url": "https://github.com/gmontalvoriv/mailock"
+  },
+  "main": "mailock.js",
+  "bin": {
+		"mailock": "mailock.js"
+	},
   "keywords": [
-		"mail encryption"
-	],
+    "mail encryption"
+  ],
   "preferGlobal": true,
   "dependencies": {
     "commander": "^2.8.1",
+    "nodemailer": "^1.4.0",
     "openpgp": "^1.2.0",
     "prompt": "^0.2.14"
   }
