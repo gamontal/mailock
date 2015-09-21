@@ -7,10 +7,17 @@ var openpgp = require('openpgp'),
 	fs = require('fs'),
 	op = require('commander'),
 	nodemailer = require('nodemailer'),
+	mkdirp = require('mkdirp'),
 	path = require('path');
 
 var base = path.dirname(require.main.filename);
 var keyloc = base + '/usr/krg/'; // key pair location
+
+mkdirp(keyloc, function (err) {
+    if (err) {
+		console.error(err)
+	}
+});
 
 function lstkey (dir, files_) {
     files_ = files_ || [];
