@@ -18,14 +18,15 @@
   },
   "main": "mailock.js",
   "bin": {
-		"mailock": "mailock.js"
-	},
+    "mailock": "mailock.js"
+  },
   "keywords": [
     "mail encryption"
   ],
   "preferGlobal": true,
   "dependencies": {
     "commander": "^2.8.1",
+    "mkdirp": "^0.5.1",
     "nodemailer": "^1.4.0",
     "openpgp": "^1.2.0",
     "prompt": "^0.2.14"
