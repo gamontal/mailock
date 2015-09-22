@@ -29,6 +29,8 @@ Generate your private and public keys.
 
 `mailock verify user@someserver.com message`
 
+Returns _true_ if signature validation is successful.
+
 ## Third party libraries
 
 All of the project's file security methods are done using the [OpenPGP.js](http://openpgpjs.org) library, and email service with [Nodemailer](http://nodemailer.com/).
