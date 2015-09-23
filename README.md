@@ -17,17 +17,19 @@ Generate your private and public keys.
 
 ## Encryption
 
-`mailock encrypt user@someserver.com plaintextFile`
+`mailock encrypt receiver@someserver.com plaintextFile`
 
 ## Decryption
 
 `mailock decrypt user@someserver.com encryptedMessage`
 
-## Sign your message
+## Message authentication and integrity checking
+
+#### Sign your message
 
 `mailock sign user@someserver.com messagefile`
 
-## Verify signature
+#### Verify signature
 
 `mailock verify user@someserver.com message`
 
