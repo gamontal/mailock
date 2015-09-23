@@ -3,7 +3,7 @@
   "author": "Gabriel Montalvo",
   "homepage": "https://github.com/gmontalvoriv/mailock",
   "description": "A command-line utility to send encrypted emails via SMTP with OpenPGP.js.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "licenses": [
     {
       "type": "GNU General Public License Version 3",
@@ -29,6 +29,7 @@
   ],
   "preferGlobal": true,
   "dependencies": {
+    "colors": "^1.1.2",
     "commander": "^2.8.1",
     "mkdirp": "^0.5.1",
     "nodemailer": "^1.4.0",
