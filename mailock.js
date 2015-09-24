@@ -27,7 +27,7 @@ function lstkey (dir, files_) {
 			if((path.extname(files[i]) === ".key") || (path.extname(files[i]) === ".asc")) {
 				var name = dir + files[i];
 				if (fs.statSync(name).isDirectory()){
-					getFiles(name, files_);
+					fs.getFiles(name, files_);
 				} else {
 					files_.push(name);
 				}
