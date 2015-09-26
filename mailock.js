@@ -12,13 +12,28 @@ var openpgp = require('openpgp'),
 	path = require('path');
 
 var base = path.dirname(require.main.filename);
-var keyloc = base + '/usr/krg/';
+var privatekeyloc = base + '/usr/krg/private/';
+var publickeyloc = base + '/usr/krg/public/';
 
-mkdirp(keyloc, function (err) {
+mkdirp(privatekeyloc, function (err) { 
     if (err) {
 		console.error(err)
 	}
 });
+
+mkdirp(publickeyloc, function (err) { 
+    if (err) {
+		console.error(err)
+	}
+});
+
+function lst_pub() {
+	console.log(lstkey(publickeyloc));
+}
+
+function lst_priv() {
+	console.log(lstkey(privatekeyloc));
+}
 
 function lstkey (dir, files_) {
     files_ = files_ || [];
@@ -129,18 +144,18 @@ function generate_key() {
 		var privKey = keypair.privateKeyArmored;
 		var pubKey = keypair.publicKeyArmored;
 
-		fs.writeFile(keyloc + usrinput.Email + "-private.key", privKey, function(err) {
+		fs.writeFile(privatekeyloc + usrinput.Email + "-private.key", privKey, function(err) {
 
 			if(err) {
 				return console.log(err);
 			} else {
-				console.log("\nYour keys have been generated successfully.\n" + colors.magenta('* Two ' + usrinput.Keylength + "-bit" + ' RSA keys will be stored here: ' + keyloc) + 
+				console.log("\nYour keys have been generated successfully.\n" + colors.magenta('* Two ' + usrinput.Keylength + "-bit" + ' RSA keys will be stored here: ' + base + '/usr/krg/') + 
 				colors.green('\n* DO NOT LOSE YOUR PRIVATE KEY FILE. If you do, you will lose access to data backed up with this tool and there\'s no way to get them back.\n'));
 			}
 
 		});
 		
-		fs.writeFile(keyloc + usrinput.Email + "-public.key", pubKey, function(err) {
+		fs.writeFile(publickeyloc + usrinput.Email + "-public.key", pubKey, function(err) {
 			
 			if(err) {
 				return console.log(err);
@@ -161,7 +176,7 @@ function generate_key() {
 
 function encryptfl(eml, filepath) { // filepath == path to the text file
 
-	var pubKeyPath = keyloc + eml + "-public.key";
+	var pubKeyPath = publickeyloc + eml + "-public.key";
 
 	var filename = GetFileName(filepath);
 
@@ -190,7 +205,7 @@ function encryptfl(eml, filepath) { // filepath == path to the text file
 
 		} else if(err.code === 'ENOENT') { 
 
-			console.log("\nNo keys here. Type --help for information.\n");
+			console.log("\nThe public key was not found. Type --list-public to view available public keys.\n");
 
 		} else {
 			console.log(err.code);
@@ -200,7 +215,7 @@ function encryptfl(eml, filepath) { // filepath == path to the text file
 
 function decryptfl(eml, filepath) { // filepath == path to the encrypted message
 
-	var privKeyPath = keyloc + eml + "-private.key";
+	var privKeyPath = privatekeyloc + eml + "-private.key";
 
 	fs.stat(privKeyPath, function(err, stat) {
 
@@ -236,7 +251,7 @@ function decryptfl(eml, filepath) { // filepath == path to the encrypted message
 			});
 
 		} else if(err.code === 'ENOENT') {
-			console.log("\nNo keys here.\n");
+			console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
 		} else {
 			console.log(err.code);
 		}
@@ -245,7 +260,7 @@ function decryptfl(eml, filepath) { // filepath == path to the encrypted message
 
 function signmsg(eml, filepath) {
 
-	var privKeyPath = keyloc + eml + "-private.key";
+	var privKeyPath = privatekeyloc + eml + "-private.key";
 
 	var filename = GetFileName(filepath);
 
@@ -290,7 +305,7 @@ function signmsg(eml, filepath) {
 			});
 
 		} else if(err.code === 'ENOENT') {
-			console.log("\nNo keys here.\n");
+			console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
 		} else {
 			console.log(err.code);
 		}
@@ -299,7 +314,7 @@ function signmsg(eml, filepath) {
 
 function verify_sign(eml, filepath) {
 
-	var pubKeyPath = keyloc + eml + "-public.key";
+	var pubKeyPath = publickeyloc + eml + "-public.key";
 	
 	fs.stat(pubKeyPath, function(err, stat) {
 
@@ -332,7 +347,7 @@ function verify_sign(eml, filepath) {
 					console.log(err);
 			});	
 		} else if(err.code === 'ENOENT') {
-			console.log(colors.red("Public key not found."));
+			console.log(colors.red("The public key was not found. Type --list-public to view available public keys."));
 			process.exit(0);
 		} 
 	});
@@ -383,14 +398,36 @@ function send_mail(eml, filepath) {
 	})
 }
 
+function import_publickey(publickey) {
+	var key_data = fs.readFileSync('./' + publickey, "utf8");
+	
+	prompt.start();
+ 
+	prompt.get(['Email'], function (err, result) {
+		if (err) {
+			console.log(err);
+		} else {
+			
+			fs.writeFile(publickeyloc + result.Email + "-public.key", key_data, function(err) {
+				
+				if(err) {
+					return console.log(err);
+				}
+				
+			});
+		}
+	});
+	
+}
+
 function main() {
 
 	op
   .version(pjson.version)
-  .usage('[option] [command]')
   .option('-g, --keygen', 'Generate a key pair')
-  .option('-l, --lstkeys', 'List keyring files, defaults to ~/../mailock/usr/krg/')
-
+  .option('--list-public', 'output list of saved public keys', lst_pub)
+  .option('--list-private', 'output list of saved private keys', lst_priv)
+  .option('-i, --import <key>', 'Import a public key file', import_publickey)
   	op
   .command('encrypt <email> <file>')
   .description('Encrypt a file')
@@ -461,7 +498,6 @@ function main() {
   op.parse(process.argv);
 
   if (op.keygen) { generate_key(); }
-  else if (op.lstkeys) { console.log(lstkey(keyloc)); }
 
 }
 
