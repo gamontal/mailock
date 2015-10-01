@@ -17,44 +17,45 @@ var publickeyloc = base + '/usr/krg/public/';
 
 mkdirp(privatekeyloc, function (err) { 
     if (err) {
-		console.error(err)
-	}
+      console.error(err)
+    }
 });
 
 mkdirp(publickeyloc, function (err) { 
     if (err) {
-		console.error(err)
-	}
+      console.error(err)
+    }
 });
 
 function lst_pub() {
-	console.log(lstkey(publickeyloc));
+  console.log(lstkey(publickeyloc));
 }
 
 function lst_priv() {
-	console.log(lstkey(privatekeyloc));
+  console.log(lstkey(privatekeyloc));
 }
 
 function lstkey (dir, files_) {
-    files_ = files_ || [];
-    var files = fs.readdirSync(dir);
-		for (var i in files){
-			if((path.extname(files[i]) === ".key") || (path.extname(files[i]) === ".asc")) {
-				var name = dir + files[i];
-				if (fs.statSync(name).isDirectory()){
-					fs.getFiles(name, files_);
-				} else {
-					files_.push(name);
-				}
-			}
-        }
+  files_ = files_ || [];
+  var files = fs.readdirSync(dir);
+
+  for (var i in files){
+    if((path.extname(files[i]) === ".key") || (path.extname(files[i]) === ".asc")) {
+      var name = dir + files[i];
+	if (fs.statSync(name).isDirectory()){
+	  fs.getFiles(name, files_);
+	} else {
+	  files_.push(name);
+	}
+     }
+   }
   return files_;
 }
 
 function GetFileName(filepath) {
-	var base_fl_name = path.basename(filepath);
-	var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
-		return filename;
+  var base_fl_name = path.basename(filepath);
+  var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
+  return filename;
 }
 
 function GetExtension(filename) {
@@ -63,360 +64,354 @@ function GetExtension(filename) {
 }
 
 function GetPass() {
-	
-	var UsrPass = {
-		properties: {
-			Passphrase: {
-				required: true,
-				hidden: true
-			}
-		}
-	}
-	prompt.start();
-		return UsrPass;
+  var UsrPass = {
+    properties: {
+      Passphrase: {
+        required: true,
+        hidden: true
+      }
+    }
+  }
+  prompt.start();
+  return UsrPass;
 }
 
 function GetUsrInfo() {
-	
-	var UserInf = {
-			properties: {
-				Keylength: {
-					required: true,
-					pattern: /^-?\d+\.?\d*$/,
-					message: 'Please enter an integer value.'
-				},
-				Name: {
-					pattern: /^[a-zA-Z\s\-]+$/,
-					required: true
-				},
-				Email: {
-					// RFC 2822 standard
-					pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-					required: true,
-				},
-				Passphrase: {
-					required: true,
-					hidden: true
-				}
-			}
-		}
-		prompt.start();
-			return UserInf;
+  var UserInf = {
+    properties: {
+      Keylength: {
+        required: true,
+        pattern: /^-?\d+\.?\d*$/,
+        message: 'Please enter an integer value.'
+      },
+      Name: {
+        pattern: /^[a-zA-Z\s\-]+$/,
+        required: true
+      },
+      Email: {
+        // RFC 2822 standard
+        pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+        required: true,
+      },
+      Passphrase: {
+        required: true,
+        hidden: true
+      }
+    }
+  }
+  prompt.start();
+  return UserInf;
 }
 
 function compose_email() {
-	
-	var emlInf = {
-			properties: {
-				Password: {
-					required: true,
-					hidden: true
-				},
-				To: {
-					pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-					required: true
-				},
-				Subject: {
-					required: true
-				}
-			}
-		}
-		prompt.start();
-			return emlInf;
+  var emlInf = {
+    properties: {
+      Password: {
+        required: true,
+        hidden: true
+      },
+      To: {
+        pattern: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+        required: true
+      },
+      Subject: {
+        required: true
+      }
+    }
+  }
+  prompt.start();
+  return emlInf;
 }
 
 function generate_key() {
+  var usrinfo = GetUsrInfo();
 
-	var usrinfo = GetUsrInfo();
+  console.log("\n");
+  prompt.get(usrinfo, function (err, usrinput) {
 
-	console.log("\n");
-	prompt.get(usrinfo, function (err, usrinput) {
+    if (!err) {
+      var options = {
+        numBits: usrinput.Keylength,
+        userId: usrinput.Name + "<" + usrinput.Email + ">",
+        passphrase: usrinput.Passphrase
+      };
 
-	if (!err) {
-		var options = {
-		numBits: usrinput.Keylength,
-		userId: usrinput.Name + "<" + usrinput.Email + ">",
-		passphrase: usrinput.Passphrase
-	};
+      openpgp.generateKeyPair(options).then(function(keypair) {
 
-	openpgp.generateKeyPair(options).then(function(keypair) {
+        var privKey = keypair.privateKeyArmored;
+        var pubKey = keypair.publicKeyArmored;
 
-		var privKey = keypair.privateKeyArmored;
-		var pubKey = keypair.publicKeyArmored;
+        fs.writeFile(privatekeyloc + usrinput.Email + "-private.key", privKey, function(err) {
 
-		fs.writeFile(privatekeyloc + usrinput.Email + "-private.key", privKey, function(err) {
+          if(err) {
+            return console.log(err);
+          } else {
+            console.log("\nYour keys have been generated successfully.\n" + colors.magenta('* Two ' + usrinput.Keylength + "-bit" + ' RSA keys will be stored here: ' + base + '/usr/krg/') + 
+                        colors.green('\n* DO NOT LOSE YOUR PRIVATE KEY FILE. If you do, you will lose access to data backed up with this tool and there\'s no way to get them back.\n'));
+          }
 
-			if(err) {
-				return console.log(err);
-			} else {
-				console.log("\nYour keys have been generated successfully.\n" + colors.magenta('* Two ' + usrinput.Keylength + "-bit" + ' RSA keys will be stored here: ' + base + '/usr/krg/') + 
-				colors.green('\n* DO NOT LOSE YOUR PRIVATE KEY FILE. If you do, you will lose access to data backed up with this tool and there\'s no way to get them back.\n'));
-			}
-
-		});
+        });
 		
-		fs.writeFile(publickeyloc + usrinput.Email + "-public.key", pubKey, function(err) {
+        fs.writeFile(publickeyloc + usrinput.Email + "-public.key", pubKey, function(err) {
 			
-			if(err) {
-				return console.log(err);
-			}
+          if(err) {
+            return console.log(err);
+          }
 
-		});
+        });
 
-		}).catch(function(error){
-			console.log(err);
-		});
+      }).catch(function(error){
+                 console.log(err);
+               });
 
-	} else {
-		console.log(err);
-	}
- });
+    } else {
+      console.log(err);
+    }
+  });
 }
 
 
 function encryptfl(eml, filepath) { // filepath == path to the text file
 
-	var pubKeyPath = publickeyloc + eml + "-public.key";
+  var pubKeyPath = publickeyloc + eml + "-public.key";
+  var filename = GetFileName(filepath);
 
-	var filename = GetFileName(filepath);
+  fs.stat(pubKeyPath, function(err, stat) { // check if key exists
 
-	fs.stat(pubKeyPath, function(err, stat) { // check if key exists
+    if(err === null) {
 
-		if(err === null) {
+      var key = fs.readFileSync(pubKeyPath, 'utf8');
+      var publicKey = openpgp.key.readArmored(key);
 
-			var key = fs.readFileSync(pubKeyPath, 'utf8');
-			var publicKey = openpgp.key.readArmored(key);
+      var message = fs.readFileSync(filepath, "utf8");
 
-			var message = fs.readFileSync(filepath, "utf8");
+      openpgp.encryptMessage(publicKey.keys, message).then(function(pgpMessage){
 
-			openpgp.encryptMessage(publicKey.keys, message).then(function(pgpMessage){
+        fs.writeFile(filename + '.asc', pgpMessage, function(err) {
 
-				fs.writeFile(filename + '.asc', pgpMessage, function(err) {
+          if(err) {
+            return console.log(err);
+          } else {
+            console.log("\nEncryption was successful.\n");
+          }
+        });
+      }).catch(function(error) {
+        console.log(err);
+      });
 
-					if(err) {
-						return console.log(err);
-					} else {
-						console.log("\nEncryption was successful.\n");
-					}
-				});
-			}).catch(function(error) {
-				console.log(err);
-			});
+    } else if(err.code === 'ENOENT') { 
 
-		} else if(err.code === 'ENOENT') { 
+      console.log("\nThe public key was not found. Type --list-public to view available public keys.\n");
 
-			console.log("\nThe public key was not found. Type --list-public to view available public keys.\n");
-
-		} else {
-			console.log(err.code);
-		}
-	});
+    } else {
+      console.log(err.code);
+    }
+  });
 }
 
 function decryptfl(eml, filepath) { // filepath == path to the encrypted message
 
-	var privKeyPath = privatekeyloc + eml + "-private.key";
+  var privKeyPath = privatekeyloc + eml + "-private.key";
 
-	fs.stat(privKeyPath, function(err, stat) {
+  fs.stat(privKeyPath, function(err, stat) {
 
-		if(err === null) { 
+    if(err === null) { 
 
-			var key = fs.readFileSync(privKeyPath, 'utf8');
-			var privateKey = openpgp.key.readArmored(key).keys[0];
+      var key = fs.readFileSync(privKeyPath, 'utf8');
+      var privateKey = openpgp.key.readArmored(key).keys[0];
 
-			var usrpass = GetPass();
+      var usrpass = GetPass();
 
-			prompt.get(usrpass, function (err, result) {
+      prompt.get(usrpass, function (err, result) {
 
-				if (err) {
-					return console.log(err);
-				} else {
+        if (err) {
+          return console.log(err);
+        } else {
 
-					if (privateKey.decrypt(result.Passphrase)) { // validates passpharse
+          if (privateKey.decrypt(result.Passphrase)) { // validates passpharse
 
-					var enc_message = fs.readFileSync(filepath, "utf8");
-				    enc_message = openpgp.message.readArmored(enc_message);
+            var enc_message = fs.readFileSync(filepath, "utf8");
+            enc_message = openpgp.message.readArmored(enc_message);
 
 
-					openpgp.decryptMessage(privateKey, enc_message).then(function(plaintext) {
-						console.log(plaintext);
-					}).catch(function(error) {
-						console.log(error);
-					});
+            openpgp.decryptMessage(privateKey, enc_message).then(function(plaintext) {
+              console.log(plaintext);
+            }).catch(function(error) {
+                       console.log(error);
+                     });
 
-					} else {
-						console.log(colors.red('Passphrase is incorrect.'))
-					}
-				}
-			});
+          } else {
+            console.log(colors.red('Passphrase is incorrect.'))
+          }
+        }
+      });
 
-		} else if(err.code === 'ENOENT') {
-			console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
-		} else {
-			console.log(err.code);
-		}
-	});
+    } else if(err.code === 'ENOENT') {
+      console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
+    } else {
+      console.log(err.code);
+    }
+  });
 }
 
 function signmsg(eml, filepath) {
 
-	var privKeyPath = privatekeyloc + eml + "-private.key";
+  var privKeyPath = privatekeyloc + eml + "-private.key";
+  var filename = GetFileName(filepath);
 
-	var filename = GetFileName(filepath);
+  fs.stat(privKeyPath, function(err, stat) {
+    if(err === null) { 
 
-	fs.stat(privKeyPath, function(err, stat) {
-		if(err === null) { 
+      var key = fs.readFileSync(privKeyPath, 'utf8');
+      var privateKey = openpgp.key.readArmored(key).keys[0];
+      var usrpass = GetPass();
 
-			var key = fs.readFileSync(privKeyPath, 'utf8');
-			var privateKey = openpgp.key.readArmored(key).keys[0];
-			var usrpass = GetPass();
+      prompt.get(usrpass, function (err, result) {
 
-			prompt.get(usrpass, function (err, result) {
+        if (err) {
 
-				if (err) {
+          return console.log(err);
 
-					return console.log(err);
+        } else {
 
-				} else {
+          if (privateKey.decrypt(result.Passphrase)) { // passphrase validation
+            var message = fs.readFileSync(filepath, "utf8");
 
-					if (privateKey.decrypt(result.Passphrase)) { // passphrase validation
-					var message = fs.readFileSync(filepath, "utf8");
+            openpgp.signClearMessage(privateKey, message).then(function(signedMsg) {
 
-				    openpgp.signClearMessage(privateKey, message).then(function(signedMsg) {
+              fs.writeFile("signed-" + filename + ".txt", signedMsg, function(err) {
 
-						fs.writeFile("signed-" + filename + ".txt", signedMsg, function(err) {
+                if(err) {
+                  return console.log(err);
+                } else {
+                  console.log("\nMessage is signed.\n");
+                }
 
-						if(err) {
-							return console.log(err);
-						} else {
-							console.log("\nMessage is signed.\n");
-						}
+              });
 
-						});
+            }).catch(function(error) {
+              console.log(error);
+            });
 
-					}).catch(function(error) {
-						console.log(error);
-					});
+          } else {
+            console.log(colors.red('Passphrase is incorrect.'));
+          }
+        }
+      });
 
-					} else {
-						console.log(colors.red('Passphrase is incorrect.'));
-					}
-				}
-			});
-
-		} else if(err.code === 'ENOENT') {
-			console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
-		} else {
-			console.log(err.code);
-		}
-	});
+    } else if(err.code === 'ENOENT') {
+      console.log("\nYour private key was not found. Type --list-private to view available private keys.\n");
+    } else {
+      console.log(err.code);
+    }
+  });
 }
 
 function verify_sign(eml, filepath) {
 
-	var pubKeyPath = publickeyloc + eml + "-public.key";
+  var pubKeyPath = publickeyloc + eml + "-public.key";
 	
-	fs.stat(pubKeyPath, function(err, stat) {
+  fs.stat(pubKeyPath, function(err, stat) {
 
-			if(err === null) {
+    if(err === null) {
 
-				var key = fs.readFileSync(pubKeyPath, 'utf8');
+      var key = fs.readFileSync(pubKeyPath, 'utf8');
 
-				var publicKey = openpgp.key.readArmored(key).keys[0];
+      var publicKey = openpgp.key.readArmored(key).keys[0];
 
-				var signedMsg = fs.readFileSync(filepath, "utf8");
-				signedMsg = openpgp.cleartext.readArmored(signedMsg);
+      var signedMsg = fs.readFileSync(filepath, "utf8");
+      signedMsg = openpgp.cleartext.readArmored(signedMsg);
 			
-				openpgp.verifyClearSignedMessage(publicKey, signedMsg).then(function(result) {
+      openpgp.verifyClearSignedMessage(publicKey, signedMsg).then(function(result) {
 			
-					var valid_message = false;
+        var valid_message = false;
 			
-					if ('signatures' in result) {
-						var signatures = result['signatures'];
+        if ('signatures' in result) {
+          var signatures = result['signatures'];
 			
-						if (signatures.length > 0) {
-							var signature = signatures[0];
+          if (signatures.length > 0) {
+            var signature = signatures[0];
 			
-							if ('valid' in signature) {
-								valid_message = signature['valid'];
-								console.log("Valid signature: " + valid_message);
-							} 
-						}
-					}
-				}).catch(function(err) {
-					console.log(err);
-			});	
-		} else if(err.code === 'ENOENT') {
-			console.log(colors.red("The public key was not found. Type --list-public to view available public keys."));
-			process.exit(0);
-		} 
-	});
+            if ('valid' in signature) {
+              valid_message = signature['valid'];
+              console.log("Valid signature: " + valid_message);
+            } 
+          }
+        }
+      }).catch(function(err) {
+                 console.log(err);
+               });	
+    } else if(err.code === 'ENOENT') {
+      console.log(colors.red("The public key was not found. Type --list-public to view available public keys."));
+      process.exit(0);
+    } 
+  });
 }
 
 function send_mail(eml, filepath) {
 
-	var emlinf = compose_email();
-	var bodymsg = fs.readFileSync(filepath, "utf8");
+  var emlinf = compose_email();
+  var bodymsg = fs.readFileSync(filepath, "utf8");
 
-	prompt.get(emlinf, function (err, result) {
+  prompt.get(emlinf, function (err, result) {
 
-		if (err) {
-			return console.log(err);
-		} else {
+    if (err) {
+      return console.log(err);
+    } else {
 
-		var transporter = nodemailer.createTransport({ // SMTP transporter object
-			service: 'Gmail',
-			auth: {
-				user: eml,
-				pass: result.Password
-			}
-		});
+      var transporter = nodemailer.createTransport({ // SMTP transporter object
+        service: 'Gmail',
+        auth: {
+          user: eml,
+          pass: result.Password
+        }
+      });
 
-		console.log('SMTP Configured');
+      console.log('SMTP Configured');
 
-		var message = {
+      var message = {
 
-			from: eml,
-			to: result.To,
-			subject: result.Subject,
-			text: bodymsg
+        from: eml,
+        to: result.To,
+        subject: result.Subject,
+        text: bodymsg
 
-		}
+      }
 
-		console.log('Sending mail ...');
-		transporter.sendMail(message, function(error, info) {
-			if (error) {
-				console.log('Error occurred');
-				console.log(error.message);
-				return;
-			}
-			console.log('Message sent successfully!');
-			console.log('Server responded with "%s"', info.response);
-		});
+      console.log('Sending mail ...');
+      transporter.sendMail(message, function(error, info) {
+        if (error) {
+          console.log('Error occurred');
+          console.log(error.message);
+          return;
+        }
+        console.log('Message sent successfully!');
+        console.log('Server responded with "%s"', info.response);
+      });
 
-		}
-	})
+    }
+  })
 }
 
 function import_publickey(publickey) {
-	var key_data = fs.readFileSync('./' + publickey, "utf8");
+  var key_data = fs.readFileSync('./' + publickey, "utf8");
 	
-	prompt.start();
+  prompt.start();
  
-	prompt.get(['Email'], function (err, result) {
-		if (err) {
-			console.log(err);
-		} else {
+  prompt.get(['Email'], function (err, result) {
+    if (err) {
+      console.log(err);
+    } else {
 			
-			fs.writeFile(publickeyloc + result.Email + "-public.key", key_data, function(err) {
+      fs.writeFile(publickeyloc + result.Email + "-public.key", key_data, function(err) {
 				
-				if(err) {
-					return console.log(err);
-				}
+        if(err) {
+          return console.log(err);
+        }
 				
-			});
-		}
-	});
+      });
+    }
+});
 	
 }
 
@@ -465,35 +460,35 @@ function main() {
   .description('Send email')
   .action(function (email, filename) { 
 
-	  var filepath = "./" + filename;
-	  var file_ext = GetExtension(filepath);
+      var filepath = "./" + filename;
+      var file_ext = GetExtension(filepath);
 
-	  if (file_ext === "asc") {
-		send_mail(email, filepath);
-	  } else {
+      if (file_ext === "asc") {
+        send_mail(email, filepath);
+      } else {
 
-		  prompt.start();
+        prompt.start();
 
-		  prompt.get({
-			  properties: {
-				  cont: {
-					  required: true,
-					  description: colors.red("This file does not seem to be encrypted. It is strongly recommended that you encrypt confidential data before sending it.") + "\nContinue? (y/n)?",
-					  pattern: /^(?:y\b|n\b|Y\b|N\b)/
-				  }
-			  }
-		  }, function(err, response) {
+        prompt.get({
+          properties: {
+            cont: {
+              required: true,
+              description: colors.red("This file does not seem to be encrypted. It is strongly recommended that you encrypt confidential data before sending it.") + "\nContinue? (y/n)?",
+              pattern: /^(?:y\b|n\b|Y\b|N\b)/
+            }
+          }
+        }, function(err, response) {
 			  
-			  if (response.cont === "n") {
-				  process.exit(0);
-			  } else if (response.cont === "y") {
-				  send_mail(email, filepath); 
-			  } else if (err) {
-				  console.log(err);
-			  } 
-		  });
-	  }
-  });
+             if (response.cont === "n") {
+               process.exit(0);
+             } else if (response.cont === "y") {
+               send_mail(email, filepath); 
+             } else if (err) {
+               console.log(err);
+             } 
+           });
+      }
+    });
 
   op.parse(process.argv);
 
