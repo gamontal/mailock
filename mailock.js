@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 'use strict';
-var openpgp = require('openpgp'),
-	prompt = require('prompt'),
-	fs = require('fs'),
-	op = require('commander'),
-	nodemailer = require('nodemailer'),
-	mkdirp = require('mkdirp'),
-	colors = require('colors/safe'),
-	pjson = require('./package.json'),
-	path = require('path');
+ var openpgp = require('openpgp'),
+     prompt = require('prompt'),
+     fs = require('fs'),
+     op = require('commander'),
+     nodemailer = require('nodemailer'),
+     mkdirp = require('mkdirp'),
+     colors = require('colors/safe'),
+     pjson = require('./package.json'),
+     path = require('path');
 
 var base = path.dirname(require.main.filename);
 var privatekeyloc = base + '/usr/krg/private/';
