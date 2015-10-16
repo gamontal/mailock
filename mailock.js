@@ -52,6 +52,30 @@ function lstkey (dir, files_) {
   return files_;
 }
 
+function copykfl(source, target, cb) {
+  var cbCalled = false;
+
+  var rd = fs.createReadStream(source);
+  rd.on("error", function(err) {
+    done(err);
+  });
+  var wr = fs.createWriteStream(target);
+  wr.on("error", function(err) {
+    done(err);
+  });
+  wr.on("close", function(ex) {
+    done();
+  });
+  rd.pipe(wr);
+
+  function done(err) {
+    if (!cbCalled) {
+      cb(err);
+      cbCalled = true;
+    }
+  }
+}
+
 function GetFileName(filepath) {
   var base_fl_name = path.basename(filepath);
   var filename = base_fl_name.substr(0, base_fl_name.lastIndexOf('.')) || base_fl_name;
@@ -415,15 +439,76 @@ function import_publickey(publickey) {
 	
 }
 
+function export_keys(eml) {
+  var pubKeyPath = publickeyloc + eml + "-public.key";
+  var privKeyPath = privatekeyloc + eml + "-private.key";
+
+  fs.stat(pubKeyPath, function(err, stat) {
+    if (err) { console.log("An error ocurred. Public key was not found."); }
+    else {
+      fs.stat(privKeyPath, function(err, stat) {
+        if (err) { console.log("An error ocurred. Private key was not found."); }
+        else {
+         copykfl(pubKeyPath, "./" + eml + "-public.key", function(err) {
+           if (err) { console.log(err); }
+         });
+         copykfl(privKeyPath, "./" + eml + "-private.key", function(err) {
+           if (err) { console.log(err); }
+         });
+          console.log("Key files have been copied to your current directory");
+        }
+      });
+    }
+  });
+}
+
+function delete_keys(eml) {
+  prompt.start();
+
+  prompt.get({
+    properties: {
+      cont: {
+        required: true,
+        description: colors.red("You are about to delete " + eml + "'s key pair.") + "\nContinue? (y/n)?",
+        pattern: /^(?:y\b|n\b|Y\b|N\b)/
+      }
+    }
+  }, function(err, response) {
+       if (response.cont === "n") {
+         process.exit(0);
+       } else if (response.cont === "y") {
+
+         var pubKeyPath = publickeyloc + eml + "-public.key";
+         var privKeyPath = privatekeyloc + eml + "-private.key";
+	
+         fs.stat(pubKeyPath, function(err, stat) {
+           if (err) { console.log("An error ocurred. Public key was not found.") }
+           else {
+             fs.stat(privKeyPath, function(err, stat) {
+               if (err) { console.log("An error ocurred. Private key was not found.") }
+               else {
+                 fs.unlinkSync(pubKeyPath);
+                 fs.unlinkSync(privKeyPath);
+               }
+             });
+           }
+         });
+         
+       } else if (err) {
+         console.log(err);
+       }
+     });
+}
+
 function main() {
 
-	op
+  op
   .version(pjson.version)
   .option('-g, --keygen', 'Generate a key pair')
   .option('--list-public', 'output list of saved public keys', lst_pub)
   .option('--list-private', 'output list of saved private keys', lst_priv)
   .option('-i, --import <key>', 'Import a public key file', import_publickey)
-  	op
+  op
   .command('encrypt <email> <file>')
   .description('Encrypt a file')
   .action(function (email, filename) {
@@ -431,7 +516,7 @@ function main() {
 	  encryptfl(email, filepath);
   })
 
-  	op
+  op
   .command('decrypt <email> <file>')
   .description('Decrypt a file')
   .action(function (email, filename) { 
@@ -439,7 +524,7 @@ function main() {
 	  decryptfl(email, filepath); 
   });
 
-  	op
+  op
   .command('sign <email> <file>')
   .description('Sign message')
   .action(function (email, filename) { 
@@ -447,7 +532,7 @@ function main() {
 	  signmsg(email, filepath); 
   });
 
-    op
+  op
   .command('verify <email> <file>')
   .description('Verify Signature')
   .action(function (email, filename) { 
@@ -455,7 +540,21 @@ function main() {
 	  verify_sign(email, filepath); 
   });
 
-    op
+  op
+  .command('delete <email>')
+  .description('Delete a user\'s key pair')
+  .action(function (email) { 
+	  delete_keys(email); 
+  });
+
+  op
+  .command('export <email>')
+  .description('Export a user\'s key pair')
+  .action(function (email) { 
+	  export_keys(email); 
+  });
+
+  op
   .command('send <email> <file>')
   .description('Send email')
   .action(function (email, filename) { 
