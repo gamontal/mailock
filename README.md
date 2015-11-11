@@ -1,6 +1,6 @@
 #mailock
 
-[![npm version](https://badge.fury.io/js/mailock.svg)](http://badge.fury.io/js/mailock)
+[![npm version](https://img.shields.io/npm/v/mailock.svg?style=flat)](https://www.npmjs.com/package/mailock) 
 [![npm downloads](https://img.shields.io/npm/dt/mailock.svg?style=flat)](https://www.npmjs.com/package/mailock)
 
 ####A command-line utility to send encrypted emails via SMTP with OpenPGP.js.
