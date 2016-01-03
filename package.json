@@ -2,7 +2,7 @@
   "name": "mailock",
   "author": "Gabriel Montalvo",
   "homepage": "https://github.com/gmontalvoriv/mailock",
-  "description": "A command-line utility to send encrypted emails via SMTP with OpenPGP.js.",
+  "description": "A command-line utility to send encrypted emails via SMTP with OpenPGP.js and Nodemailer.",
   "version": "1.0.1",
   "licenses": [
     {
@@ -17,12 +17,19 @@
   "bugs": {
     "url": "https://github.com/gmontalvoriv/mailock"
   },
-  "main": "mailock.js",
+  "main": "cli.js",
   "bin": {
-    "mailock": "mailock.js"
+    "mailock": "./bin/cli.js"
   },
+  "files": [
+    "bin",
+    "lib",
+    "test",
+    "cli.js",
+    "*.js"
+  ],
   "keywords": [
-    "Email encryption",
+    "email encryption",
     "pgp",
     "gpg",
     "openpgp"
