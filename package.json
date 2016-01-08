@@ -19,12 +19,10 @@
   },
   "main": "cli.js",
   "bin": {
-    "mailock": "./bin/cli.js"
+    "mailock": "cli.js"
   },
   "files": [
-    "bin",
     "lib",
-    "test",
     "cli.js",
     "*.js"
   ],

@@ -1,27 +1,32 @@
 #!/usr/bin/env node
 
 'use strict';
-var pkg = require('../package.json');
-var handler = require('../lib/file_modules/handler');
+var pkg = require('./package.json');
+var fileInfo = require('./lib/file_modules/file_info');
 var colors = require('colors/safe');
 var prompt = require('prompt');
 var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
-var keys = require('../lib/keys');
-var encrypt = require('../lib/encryption');
-var decrypt = require('../lib/decryption');
-var sign = require('../lib/sign');
-var verifySign = require('../lib/verify');
-var compose = require('../lib/compose');
+var keys = require('./lib/keys');
+var encrypt = require('./lib/encryption');
+var decrypt = require('./lib/decryption');
+var sign = require('./lib/sign');
+var verifySign = require('./lib/verify');
+var compose = require('./lib/compose');
 var cli = require('commander');
 var base = path.dirname(require.main.filename);
-var privateKeyLoc = base + '/data/usr/krg/priv/';
-var publicKeyLoc = base + '/data/usr/krg/pub/';
+var privateKeyLoc = base + '/usr/krg/private/';
+var publicKeyLoc = base + '/usr/krg/public/';
 var filepath;
 
-mkdirp(privateKeyLoc, function (err) { if (err) { console.error(err); } });
-mkdirp(publicKeyLoc, function (err) { if (err) { console.error(err); } });
+mkdirp(privateKeyLoc, function (err) {
+  if (err) { console.error(err); }
+});
+
+mkdirp(publicKeyLoc, function (err) {
+  if (err) { console.error(err); }
+});
 
 cli
   .version(pkg.version)
@@ -70,7 +75,7 @@ cli
   .action(function (email, filename) {
 
     filepath = './' + filename;
-    var file_ext = handler.GetExtension(filepath);
+    var file_ext = fileInfo.GetExtension(filepath);
 
     if (file_ext === 'asc') {
       compose(email, filepath);
