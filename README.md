@@ -1,9 +1,10 @@
 # mailock
 
 [![npm version](https://img.shields.io/npm/v/mailock.svg?style=flat)](https://www.npmjs.com/package/mailock) 
+[![Dependency Status](https://david-dm.org/gmontalvoriv/mailock.svg)](https://www.npmjs.com/package/mailock)
 [![npm downloads](https://img.shields.io/npm/dt/mailock.svg?style=flat)](https://www.npmjs.com/package/mailock)
 
-#### A command-line utility to send encrypted emails via SMTP with OpenPGP.js.
+#### A command-line utility to send encrypted emails via SMTP with OpenPGP.js and Nodemailer.
 `mailock` is a simple command-line utility that lets you encrypt and decrypt your files, sign and verify your messages, and send out content securely through SMTP using the Nodemailer library. Taking advantage of Node.js's great cross-platform support, this project aims to make use of these libraries and making standard PGP encryption services available in one package.
 
 ## Installation
