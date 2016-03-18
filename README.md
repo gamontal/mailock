@@ -1,3 +1,6 @@
+###This project is NOT being maintained.
+> If you have any questions please email me at [gmontalvo@protonmail.com](mailto:gmontalvo@protonmail.com)
+
 # mailock
 
 [![npm version](https://img.shields.io/npm/v/mailock.svg?style=flat)](https://www.npmjs.com/package/mailock) 
